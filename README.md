@@ -1,109 +1,97 @@
-**VarToObject** is a Lua module designed for Roblox developers that seamlessly maps Lua tables to Roblox Instances. It enables two-way synchronization between your Lua tables and the Roblox Instance hierarchy, allowing dynamic and real-time data manipulation within your games.
+## TableToConfig Module
 
-## Features
-- **Two-Way Synchronization:** Automatically syncs changes between Lua tables and Roblox Instances.
-- **Dynamic Updates:** Handles additions, updates, and removals of table keys in real-time.
-- **Type Mapping:** Supports `number`, `string`, `boolean`, and `table` types, mapping them to appropriate Roblox Instance classes.
-- **Proxy Tables:** Utilizes Lua's metatables to create proxy tables for seamless interaction.
-- **Event Handling:** Listens to Roblox Instance events to maintain synchronization.
+The `TableToConfig` module allows you to map a Lua table into Roblox's `Configuration` instances. This is useful for creating a dynamic and synchronized configuration structure in your game.
 
-## Installation
+### Features
+- Automatically syncs Lua table structures with `Configuration` instances.
+- Handles attribute changes and child configurations in Roblox.
+- Provides a proxy table to easily update values in both Lua and Roblox instances.
 
-1. **Download the Module:**
-   - Clone the repository or download the `VarToObject.lua` file directly.
+### Usage
 
-2. **Add to Your Project:**
-   - Place `VarToObject.lua` in a suitable location within your Roblox project, such as `ReplicatedStorage` or `ServerScriptService`.
+1. **Include the `TableToConfig` module** in your game by requiring it:
 
-## Usage
+   ```lua
+   local TableToConfig = require(script.TableToConfig)
+   ```
 
-### Setup
+2. **Create a table that you want to sync with Roblox**. For example, a player's stats:
 
-1. **Require the Module:**
- ```lua
-   local VarToObject = require(script.VarToObject)
-```
+   ```lua
+   local PlayerData = {
+       Gold = 200,
+       MainStats = {
+           Defense = 200,
+           Attack = 40,
+           SubStats = {
+               Armor = 20
+           }
+       }
+   }
+   ```
 
-2.**Create a Main Table:**
-Define the Lua table you want to synchronize with Roblox Instances.
+3. **Initialize the `TableToConfig` with the table**. The first argument is the name for the root `Configuration` instance, and the second is the table you want to synchronize:
+
+   ```lua
+   local Cache = TableToConfig.new("PlayerData", PlayerData)
+   Cache.RootInstance.Parent = game.ServerStorage  -- Parent the root instance to Roblox storage/somewhere.
+   local ProxyTable = Cache.ProxiedTable  -- Get the proxy for future updates
+   ```
+
+4. **Update values dynamically** using the proxy table. Changes made to this proxy table will automatically reflect in the Roblox `Configuration` instances:
+
+   ```lua
+   task.delay(8, function()
+       ProxyTable.Gold = math.random(1, 200)  -- Update Gold value after 8 seconds
+   end)
+   ```
+
+5. **Print or log table values**:
+
+   ```lua
+   print(PlayerData.Gold)  -- Prints the initial value of Gold
+   ```
+
+### Example
+
+Here is a full example that sets up a player data configuration, updates a value randomly, and prints the table:
+
 ```lua
-local mainTable = {
-    Health = 100,
-    Name = "Player1",
-    Settings = {
-        Volume = 75,
-        Difficulty = "Hard"
-    }
-}
-```
+local TableToConfig = require(script.TableToConfig)
 
-3.**Initialize VarToObject:**
-Create a new VarToObject instance, specifying a name for the root instance and passing the main table.
-
-```lua
-local varObj = VarToObject.new("PlayerData", mainTable)
-```
-4.**Parent the Root Instance:**
-Set the parent of the root instance to a suitable location in the Roblox hierarchy, such as ServerStorage.
-
-```lua
-varObj.RootInstance.Parent = game.ServerStorage
-```
-5.**Interact with the Proxy Table:**
-Use the proxied table to make changes that will automatically synchronize with the Roblox Instances.
-```lua
-local proxy = varObj.ProxiedTable
-proxy.Health = 150
-proxy.Settings.Volume = 85
-proxy.Score = 2500
-```
-##Example
-Below is a comprehensive example demonstrating how to use VarToObject in a Roblox script.
-```lua
--- ExampleUsage.lua
-
-local VarToObject = require(script.VarToObject)
-
--- Define the main table
-local mainTable = {
-    Health = 100,
-    Name = "Player1",
-    Settings = {
-        Volume = 75,
-        Difficulty = "Hard"
+-- Define player data
+local PlayerData = {
+    Gold = 200,
+    MainStats = {
+        Defense = 200,
+        Attack = 40,
+        SubStats = {
+            Armor = 20
+        }
     }
 }
 
--- Initialize VarToObject
-local varObj = VarToObject.new("PlayerData", mainTable)
+-- Create a new TableToConfig
+local Cache = TableToConfig.new("PlayerData", PlayerData)
+Cache.RootInstance.Parent = game.ServerStorage
+local ProxyTable = Cache.ProxiedTable
 
--- Parent the root instance to ServerStorage
-varObj.RootInstance.Parent = game.ServerStorage
+-- Print the initial value of Gold
+print(PlayerData.Gold)
 
--- Access the proxied table
-local proxy = varObj.ProxiedTable
-
--- Modify table values
-proxy.Health = 150
-proxy.Settings.Volume = 85
-proxy.Score = 2500
-
--- Schedule changes using delays
+-- Update Gold randomly after 8 seconds
 task.delay(8, function()
-    proxy.Settings = nil -- Removes the Settings key
+    ProxyTable.Gold = math.random(1, 200)
 end)
 
-task.delay(5, function()
-    proxy.Stats = { Gold = 2000 }
-    for i = 1, 6 do
-        proxy.Stats.Gold = math.random(1, 8000)
-        task.wait(4)
-    end
-end)
-
--- Continuously print the main table
+-- Continuously print the PlayerData every 4 seconds, This just shows that the table was updated.
 while true do
-    print(mainTable)
+    print(PlayerData)
     task.wait(4)
 end
 ```
+
+### Notes
+- Ensure the `TableToConfig.lua` file is located in a directory accessible by your script.
+- The proxy table (`ProxiedTable`) allows you to update Lua table values and sync them with the configuration instance.
+- Use the `Destroy()` method to clean up all instances and connections when they are no longer needed.
