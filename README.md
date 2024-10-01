@@ -6,7 +6,7 @@ The `TableToConfig` module allows you to map a Lua table into Roblox's `Configur
 - Automatically syncs Lua table structures with `Configuration` instances.
 - Handles attribute changes and child configurations in Roblox.
 - Provides a proxy table to easily update values in both Lua and Roblox instances.
-- Any modifications to attribute values—whether adding, deleting, or altering—are immediately reflected in the main table in real time.
+- Any modifications to attribute values whether adding, deleting, or altering are immediately reflected in the main table in real time.
 
 ### Usage
 
